@@ -186,10 +186,9 @@ namespace PKISharp.WACS.Clients.Acme
                         _log.Error("Unable to retrieve EAB credentials using the provided email address");
                     }
                 }
-                async Task apiKeyRegistration()
+                async Task apiKeyRegistration(string accessKey) 
                 {
-                    var accessKey = await _input.ReadPassword("API access key");
-                    var eab = await _zeroSsl.Obtain(accessKey ?? "");
+                    var eab = await _zeroSsl.Obtain(accessKey);
                     if (eab != null)
                     {
                         eabKid = eab.Kid;
@@ -199,11 +198,20 @@ namespace PKISharp.WACS.Clients.Acme
                     {
                         _log.Error("Unable to retrieve EAB credentials using the provided API access key");
                     }
-                }
+                };
+                async Task apiKeyRegistrationManualInput()
+                {
+                    var accessKey = await _input.ReadPassword("API access key");
+                    await apiKeyRegistration(accessKey ?? "");
+                };
                 if (!string.IsNullOrWhiteSpace(_accountArguments.EmailAddress))
                 {
                     await emailRegistration();
-                } 
+                }
+                else if (!string.IsNullOrWhiteSpace(_accountArguments.ApiKey))
+                {
+                    await apiKeyRegistration(_accountArguments.ApiKey);
+                }
                 else
                 {
                     var instruction = "ZeroSsl can be used either by setting up a new " +
@@ -216,7 +224,7 @@ namespace PKISharp.WACS.Clients.Acme
                         "How would you like to create the account?",
                         new List<Choice<Func<Task>>>()
                         {
-                            Choice.Create((Func<Task>)apiKeyRegistration, "API access key"),
+                            Choice.Create((Func<Task>)apiKeyRegistrationManualInput, "API access key"),
                             Choice.Create((Func<Task>)emailRegistration, "Email address"),
                             Choice.Create<Func<Task>>(() => Task.CompletedTask, "Input EAB credentials directly")
                         });

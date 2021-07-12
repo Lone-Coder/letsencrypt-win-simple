@@ -18,5 +18,8 @@
 
         [CommandLine(Name = "eab-algorithm", Description = "Algorithm to use for external account binding. Valid values are HS256 (default), HS384, and HS512.")]
         public string? EabAlgorithm { get; set; }
-    }
+
+        [CommandLine(Name = "api-key", Description = "Single API key, currently only used to run unattended with ZeroSSL.", Secret = true)]
+        public string? ApiKey { get; set; }
+}
 }
